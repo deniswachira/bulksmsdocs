@@ -36,8 +36,8 @@
         ],
         "primary": {
             "type": "button",
-            "label": "Get API Key",
-            "href": "https://bulksms.xyratechnology.co.ke"
+            "label": "Request access",
+            "href": "https://wa.me/254111336506?text=Hi%20Xyra%2C%20I%27d%20like%20to%20get%20a%20Bulk%20SMS%20API%20account."
         }
     },
     "footer": {
