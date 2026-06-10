@@ -1,0 +1,124 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Xyra Bulk SMS",
+  "description": "Developer documentation for the Xyra Bulk SMS HTTP API. Send single or bulk SMS to Kenyan mobile networks, query delivery receipts, and check account balance.",
+  "colors": {
+    "primary": "#0d9488",
+    "light": "#14b8a6",
+    "dark": "#0f766e"
+  },
+  "favicon": "/favicon.png",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "background": {
+    "color": {
+      "light": "#ffffff",
+      "dark": "#0a0a0a"
+    }
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Dashboard",
+        "href": "https://bulksms.xyratechnology.co.ke"
+      },
+      {
+        "label": "Support",
+        "href": "mailto:hello@xyratechnology.co.ke"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get API Key",
+      "href": "https://bulksms.xyratechnology.co.ke/login"
+    }
+  },
+  "footer": {
+    "socials": {
+      "website": "https://xyratechnology.co.ke",
+      "x": "https://x.com/xyratechnology"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/sender-ids",
+              "concepts/delivery-receipts",
+              "concepts/encoding"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "errors",
+              "changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Messaging",
+            "pages": [
+              "api-reference/send-sms",
+              "api-reference/send-bulk-sms"
+            ]
+          },
+          {
+            "group": "Delivery",
+            "pages": [
+              "api-reference/get-delivery-report"
+            ]
+          },
+          {
+            "group": "Account",
+            "pages": [
+              "api-reference/get-balance",
+              "api-reference/network-status"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "openapi": "openapi.yaml",
+    "playground": {
+      "display": "interactive"
+    },
+    "examples": {
+      "languages": ["curl", "javascript", "python", "php"]
+    }
+  },
+  "seo": {
+    "metatags": {
+      "og:title": "Xyra Bulk SMS — API Documentation",
+      "og:description": "Send bulk SMS in Kenya via HTTP. Sub-second delivery, per-message DLR, simple JSON API."
+    },
+    "indexing": "navigable"
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude"]
+  }
+}

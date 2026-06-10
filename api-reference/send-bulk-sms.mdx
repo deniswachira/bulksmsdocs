@@ -1,0 +1,51 @@
+---
+title: "Send Bulk SMS"
+openapi: "POST /api/services/sendbulk/"
+---
+
+Submits multiple messages in a single request. Use this for campaigns,
+notifications fanned out to a recipient list, or any time you'd
+otherwise loop over [Send SMS](/api-reference/send-sms).
+
+## When to use bulk vs single
+
+| Volume                | Use                                   |
+| --------------------- | ------------------------------------- |
+| 1 recipient            | [`/sendsms/`](/api-reference/send-sms) |
+| 2–10,000 recipients   | `/sendbulk/` (this endpoint)          |
+| > 10,000 recipients   | Split into batches of ~10,000 and call `/sendbulk/` once per batch. |
+
+## Field notes
+
+- **`count`** — must match `smslist.length` exactly.
+- **`smslist[].clientsmsid`** — strongly recommended for bulk sends.
+  Set it to your own row id so the response can be joined back to your
+  database without parsing `mobile`.
+- Each `smslist` entry is treated independently — one bad recipient
+  doesn't fail the rest. Check each entry's `response-code` in the
+  returned `responses` array.
+
+## Response shape
+
+```json
+{
+  "responses": [
+    {
+      "response-code": 200,
+      "response-description": "Success",
+      "mobile": "254712345678",
+      "messageid": 78726470,
+      "clientsmsid": 1001,
+      "networkid": "1"
+    },
+    {
+      "response-code": 1001,
+      "response-description": "Invalid mobile",
+      "mobile": "0712-bad",
+      "clientsmsid": 1002
+    }
+  ]
+}
+```
+
+Always iterate `responses` and check `response-code` per entry.

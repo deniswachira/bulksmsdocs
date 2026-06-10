@@ -1,0 +1,52 @@
+---
+title: "Sender IDs"
+description: "How sender IDs and shortcodes work, and how to register your brand."
+---
+
+The `shortcode` field on every send request controls **what the
+recipient sees as the sender** of your SMS. It can be one of:
+
+| Type            | Example  | Notes                                             |
+| --------------- | -------- | ------------------------------------------------- |
+| Alphanumeric    | `XYRA`   | 1–11 characters, letters and digits, no spaces.   |
+| Numeric shortcode | `22000` | 5-digit Kenyan shortcodes, allocated per service. |
+
+## Default sender
+
+If you don't have a registered sender ID yet, you can send test traffic
+using `XYRA`. This is fine for development, but **production messages
+should always use your own registered sender** so recipients recognise
+the brand.
+
+## Registering a branded sender ID
+
+To register a sender ID for your business (e.g. `ACME`, `KARIBU`):
+
+1. Choose your sender ID. **Must be 1–11 characters**, letters and
+   digits only, no spaces, no punctuation.
+2. Email [hello@xyratechnology.co.ke](mailto:hello@xyratechnology.co.ke) with:
+   - Your business name and registration number.
+   - Sample message content (one or two examples of what you'll send).
+   - The sender ID you'd like.
+3. Approval normally takes 2–5 business days. Carrier registration is
+   handled on your behalf.
+
+<Note>
+  Sender IDs are case-insensitive — `XYRA`, `Xyra`, and `xyra` are
+  treated as the same registered sender.
+</Note>
+
+## Restrictions
+
+- Generic words (`SMS`, `INFO`, `BANK`, `MPESA`) are blocked by carriers.
+- Sender IDs that impersonate another brand will be rejected.
+- Promotional sender IDs may need additional documentation depending on
+  the industry (finance, gaming, health).
+
+## What happens if my sender ID isn't registered?
+
+If you send a message with a `shortcode` that hasn't been registered
+with carriers, the carrier will reject the message at the network edge.
+You'll see a delivery status of `UNDELIV` or `REJECTD` when you query
+the DLR. See [Delivery Receipts](/concepts/delivery-receipts) for what
+each status means.

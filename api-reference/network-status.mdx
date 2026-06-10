@@ -1,0 +1,29 @@
+---
+title: "Network Status"
+openapi: "POST /api/services/mnostatus/"
+---
+
+Returns the current routing/health status for each supported mobile
+network (Safaricom, Airtel, Telkom).
+
+## When to use it
+
+- Before launching a large campaign — if a carrier is `DEGRADED`,
+  consider delaying or routing only to the healthy networks.
+- From a dashboard widget — give your operators visibility into upstream
+  health.
+- From an automated check — page on-call if any carrier is `DOWN` for
+  more than a few minutes.
+
+## Status values
+
+| Value      | Meaning                                                          |
+| ---------- | ---------------------------------------------------------------- |
+| `UP`       | Normal throughput. Messages flow as expected.                    |
+| `DEGRADED` | Carrier is accepting messages but delivery is slow or partial.   |
+| `DOWN`     | Carrier is not accepting messages. New sends to this network will fail or queue. |
+
+## No authentication
+
+Network status is public — you can call this endpoint with an empty
+body. It doesn't consume credits.

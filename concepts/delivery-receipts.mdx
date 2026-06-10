@@ -1,0 +1,50 @@
+---
+title: "Delivery Receipts"
+description: "Understanding the SMPP delivery states returned by /getdlr."
+---
+
+When you query [`/api/services/getdlr/`](/api-reference/get-delivery-report)
+with a `messageID`, you get back a **delivery status** — a short code
+that tells you the final state the carrier reached for that message.
+
+## Status reference
+
+| Status     | Meaning                                                                                  | What to do                                                              |
+| ---------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `DELIVRD`  | Handset confirmed receipt. ✅                                                            | Nothing — this is the success case.                                     |
+| `ACCEPTD`  | Accepted by carrier; awaiting handset confirmation.                                      | Wait a few minutes and re-query.                                        |
+| `EXPIRED`  | Carrier held the message but the handset was unreachable for too long (off, no signal).  | Safe to retry later. Don't retry immediately.                            |
+| `UNDELIV`  | Carrier could not deliver. Common causes: invalid number, sender ID not allowed.         | Verify the recipient number and your sender ID registration.            |
+| `REJECTD`  | Carrier explicitly rejected (e.g. sender ID blacklisted, recipient opted out).           | Don't retry. Investigate the sender ID and content.                     |
+| `UNKNOWN`  | Carrier never returned a final state.                                                    | Re-query a few minutes later. If still `UNKNOWN`, treat as `UNDELIV`.   |
+| `DELETED`  | Message was deleted from the carrier queue before delivery (rare; usually operator action). | Investigate via support.                                                |
+
+## When does a DLR arrive?
+
+- **Most messages:** 1–10 seconds for `ACCEPTD`, then a final state within a minute.
+- **Phone off / out of coverage:** the carrier holds the message and retries for up to ~24 hours before marking it `EXPIRED`.
+- **Invalid number:** usually returns `UNDELIV` within seconds.
+
+This means **a `getdlr` call shortly after `sendsms` may return no final
+state yet** — that's normal. Poll once a minute for up to a few minutes,
+or wait longer for handsets that may be unreachable.
+
+## Suggested polling pattern
+
+```text
+0s    → send
++5s   → first DLR check
++30s  → second DLR check (if still pending)
++5m   → third check
++1h   → final check (if still pending)
+```
+
+After about an hour without a final state, the message is effectively
+lost — treat it as `UNDELIV`.
+
+## Why some messages never get a DLR
+
+A small fraction of messages never produce a DLR from the carrier
+(network outage, MSC reboot, etc.). For accounting purposes you should
+have a cutoff (commonly 1 hour) after which a message with no DLR is
+treated as failed.

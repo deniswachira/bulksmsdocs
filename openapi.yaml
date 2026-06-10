@@ -1,0 +1,479 @@
+openapi: 3.1.0
+info:
+  title: Xyra Bulk SMS API
+  version: "1.0.0"
+  description: |
+    HTTP API for sending SMS to Kenyan mobile networks (Safaricom, Airtel,
+    Telkom). All requests are JSON over HTTPS. Authentication is via
+    `apikey` + `partnerID` carried in the request body.
+
+    Get your credentials from the [Xyra Bulk SMS dashboard](https://bulksms.xyratechnology.co.ke).
+  contact:
+    name: Xyra Technology Support
+    email: hello@xyratechnology.co.ke
+    url: https://bulksms.xyratechnology.co.ke
+  license:
+    name: Proprietary
+servers:
+  - url: https://bulksms.xyratechnology.co.ke
+    description: Production
+tags:
+  - name: Authentication
+    description: Token-based session auth. Optional — most send/query endpoints accept `apikey` + `partnerID` directly.
+  - name: Messaging
+    description: Send single or bulk SMS.
+  - name: Delivery
+    description: Query the delivery state of a previously submitted message.
+  - name: Account
+    description: Balance and network status.
+paths:
+  /api/services/auth/:
+    post:
+      tags: [Authentication]
+      summary: Obtain a session token
+      description: |
+        Exchanges a `username` + `secret` for a short-lived session token.
+
+        Most integrations do **not** need to call this endpoint — the
+        `/sendsms`, `/sendbulk`, `/getdlr`, and `/getbalance` endpoints
+        accept your `apikey` and `partnerID` directly. Only use `/auth`
+        when you need a session-scoped token for a dashboard-style flow.
+      operationId: authenticate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+            examples:
+              default:
+                value:
+                  username: "your-username"
+                  secret: "your-secret"
+                  pass_type: "plain"
+      responses:
+        "200":
+          description: Authentication succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/services/sendsms/:
+    post:
+      tags: [Messaging]
+      summary: Send a single SMS
+      description: |
+        Submits one SMS to one recipient. Returns immediately with a
+        `messageid` you can later use to query delivery status via
+        [`/api/services/getdlr/`](/api-reference/get-delivery-report).
+
+        The recipient handset usually receives the message in 1–10 seconds.
+        Final delivery is confirmed via a separate DLR lookup.
+      operationId: sendSms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendSmsRequest"
+            examples:
+              default:
+                value:
+                  apikey: "your-api-key"
+                  partnerID: "your-partner-id"
+                  mobile: "254712345678"
+                  message: "Hello from Xyra Bulk SMS"
+                  shortcode: "XYRA"
+                  pass_type: "plain"
+      responses:
+        "200":
+          description: Message accepted for delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendSmsResponse"
+              examples:
+                success:
+                  value:
+                    responses:
+                      - response-code: 200
+                        response-description: "Success"
+                        mobile: "254712345678"
+                        messageid: 78726470
+                        networkid: "1"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+
+  /api/services/sendbulk/:
+    post:
+      tags: [Messaging]
+      summary: Send bulk SMS in one call
+      description: |
+        Submits up to many messages in a single request. Each `smslist`
+        entry has its own recipient, message, and optional `clientsmsid`
+        you can use to correlate the response back to your own records.
+
+        Use this for campaigns and notifications fanned out to a list. For
+        a one-off message, prefer [`/sendsms/`](/api-reference/send-sms).
+      operationId: sendBulkSms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendBulkRequest"
+            examples:
+              two_messages:
+                value:
+                  count: 2
+                  smslist:
+                    - apikey: "your-api-key"
+                      partnerID: "your-partner-id"
+                      pass_type: "plain"
+                      clientsmsid: 1001
+                      mobile: "254712345678"
+                      message: "Hello Alice"
+                      shortcode: "XYRA"
+                    - apikey: "your-api-key"
+                      partnerID: "your-partner-id"
+                      pass_type: "plain"
+                      clientsmsid: 1002
+                      mobile: "254722345678"
+                      message: "Hello Bob"
+                      shortcode: "XYRA"
+      responses:
+        "200":
+          description: Batch accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendSmsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+
+  /api/services/getdlr/:
+    post:
+      tags: [Delivery]
+      summary: Get delivery report
+      description: |
+        Returns the carrier-reported delivery state for a single message,
+        identified by the `messageID` you received from `/sendsms` or
+        `/sendbulk`.
+
+        DLRs can take from a few seconds to up to 24 hours to arrive at
+        the carrier, so a `Pending` or empty response shortly after
+        sending is normal.
+      operationId: getDeliveryReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DlrRequest"
+            examples:
+              default:
+                value:
+                  apikey: "your-api-key"
+                  partnerID: "your-partner-id"
+                  messageID: "95367513"
+      responses:
+        "200":
+          description: Delivery state returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DlrResponse"
+              examples:
+                delivered:
+                  value:
+                    response-code: 200
+                    description: "Success"
+                    messageid: 95367513
+                    deliveryStatus: "DELIVRD"
+                    deliveryDescription: "Delivered to handset"
+                    deliveredAt: "2026-06-10T10:32:11Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/services/getbalance/:
+    post:
+      tags: [Account]
+      summary: Get account balance
+      description: |
+        Returns the current SMS credit balance on your account. Each
+        credit corresponds to one 160-character GSM-7 segment, or one
+        70-character Unicode segment.
+      operationId: getBalance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BalanceRequest"
+      responses:
+        "200":
+          description: Balance returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BalanceResponse"
+              examples:
+                success:
+                  value:
+                    response-code: 200
+                    description: "Success"
+                    credit: 8423
+                    partnerID: "your-partner-id"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/services/mnostatus/:
+    post:
+      tags: [Account]
+      summary: Mobile network operator status
+      description: |
+        Returns the current routing/health status for each supported
+        mobile network. Useful for diagnosing carrier-side incidents
+        before they affect your campaigns.
+      operationId: networkStatus
+      responses:
+        "200":
+          description: Per-network status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NetworkStatusResponse"
+              examples:
+                all_up:
+                  value:
+                    response-code: 200
+                    networks:
+                      - network: "Safaricom"
+                        status: "UP"
+                      - network: "Airtel"
+                        status: "UP"
+                      - network: "Telkom"
+                        status: "UP"
+
+components:
+  schemas:
+    AuthRequest:
+      type: object
+      required: [username, secret]
+      properties:
+        username:
+          type: string
+          description: Your account username.
+        secret:
+          type: string
+          description: Your account secret.
+        pass_type:
+          type: string
+          enum: [plain]
+          default: plain
+          description: Always `plain`.
+    AuthResponse:
+      type: object
+      properties:
+        response-code:
+          type: integer
+          example: 200
+        token:
+          type: string
+          description: Bearer token for subsequent calls.
+        expires_in:
+          type: integer
+          description: Token validity in seconds.
+    SendSmsRequest:
+      type: object
+      required: [apikey, partnerID, mobile, message, shortcode]
+      properties:
+        apikey:
+          type: string
+          description: Your API key from the dashboard.
+        partnerID:
+          type: string
+          description: Your partner ID from the dashboard.
+        mobile:
+          type: string
+          description: |
+            Recipient MSISDN in international format without `+`
+            (e.g. `254712345678`).
+          example: "254712345678"
+        message:
+          type: string
+          description: Message body. Max 1530 characters (10 segments).
+        shortcode:
+          type: string
+          description: Approved sender ID (alphanumeric, 1–11 chars) or shortcode.
+          example: "XYRA"
+        pass_type:
+          type: string
+          enum: [plain]
+          default: plain
+        clientsmsid:
+          type: integer
+          description: Optional client-side correlation id.
+    SendBulkRequest:
+      type: object
+      required: [count, smslist]
+      properties:
+        count:
+          type: integer
+          description: Number of messages in `smslist`.
+        smslist:
+          type: array
+          items:
+            $ref: "#/components/schemas/SendSmsRequest"
+    SendSmsResponse:
+      type: object
+      properties:
+        responses:
+          type: array
+          items:
+            type: object
+            properties:
+              response-code:
+                type: integer
+                description: 200 = success.
+              response-description:
+                type: string
+              mobile:
+                type: string
+              messageid:
+                type: integer
+                description: Server-generated id used for DLR lookup.
+              networkid:
+                type: string
+                description: |
+                  Carrier code — `1`=Safaricom, `2`=Airtel, `3`=Telkom.
+              clientsmsid:
+                type: integer
+                description: Echoes your `clientsmsid` if you supplied one.
+    DlrRequest:
+      type: object
+      required: [apikey, partnerID, messageID]
+      properties:
+        apikey: { type: string }
+        partnerID: { type: string }
+        messageID:
+          type: string
+          description: The `messageid` returned by `/sendsms` or `/sendbulk`.
+    DlrResponse:
+      type: object
+      properties:
+        response-code: { type: integer }
+        description: { type: string }
+        messageid: { type: integer }
+        deliveryStatus:
+          type: string
+          enum:
+            - DELIVRD
+            - EXPIRED
+            - UNDELIV
+            - REJECTD
+            - ACCEPTD
+            - UNKNOWN
+            - DELETED
+          description: |
+            Standard SMPP delivery state. See
+            [Delivery Receipts](/concepts/delivery-receipts) for meaning.
+        deliveryDescription: { type: string }
+        deliveredAt:
+          type: string
+          format: date-time
+    BalanceRequest:
+      type: object
+      required: [apikey, partnerID]
+      properties:
+        apikey: { type: string }
+        partnerID: { type: string }
+    BalanceResponse:
+      type: object
+      properties:
+        response-code: { type: integer }
+        description: { type: string }
+        credit:
+          type: integer
+          description: Remaining SMS credits on the account.
+        partnerID: { type: string }
+    NetworkStatusResponse:
+      type: object
+      properties:
+        response-code: { type: integer }
+        networks:
+          type: array
+          items:
+            type: object
+            properties:
+              network:
+                type: string
+                example: "Safaricom"
+              status:
+                type: string
+                enum: [UP, DEGRADED, DOWN]
+    Error:
+      type: object
+      properties:
+        response-code:
+          type: integer
+        response-description:
+          type: string
+  responses:
+    BadRequest:
+      description: Validation error — usually a missing or malformed field.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            missing_field:
+              value:
+                response-code: 1001
+                response-description: "Missing required field: mobile"
+    Unauthorized:
+      description: Invalid or missing `apikey` / `partnerID`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            bad_key:
+              value:
+                response-code: 1003
+                response-description: "Invalid API credentials"
+    PaymentRequired:
+      description: Insufficient SMS credit balance.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            no_credit:
+              value:
+                response-code: 1004
+                response-description: "Insufficient credit"
+    NotFound:
+      description: Message id not found, or has been archived.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            not_found:
+              value:
+                response-code: 1005
+                response-description: "Message not found"

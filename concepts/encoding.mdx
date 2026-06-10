@@ -1,0 +1,69 @@
+---
+title: "Message Encoding & Length"
+description: "GSM-7 vs Unicode, segment counts, and how characters affect pricing."
+---
+
+SMS messages are billed per **segment**, not per message. The number of
+segments a message uses depends on its **encoding** and **length**.
+
+## GSM-7 (the cheap path)
+
+If your message only contains characters from the standard GSM-7
+alphabet — basic Latin letters, digits, and common punctuation — each
+segment holds **160 characters**.
+
+| Length        | Segments billed |
+| ------------- | --------------- |
+| 1–160 chars   | 1               |
+| 161–306 chars | 2               |
+| 307–459 chars | 3               |
+| 460–612 chars | 4               |
+| …             | …               |
+
+<Note>
+  Segments after the first hold only **153 characters** because 7 bytes
+  are used for the multi-part header. This is industry standard, not
+  Xyra-specific.
+</Note>
+
+## Unicode (UCS-2)
+
+If your message contains a single non-GSM-7 character — an emoji, a
+non-Latin script, or even certain "smart quotes" copied from Word —
+the **entire message** flips to UCS-2 encoding and each segment now
+holds only **70 characters**.
+
+| Length      | Segments billed |
+| ----------- | --------------- |
+| 1–70 chars  | 1               |
+| 71–134 chars | 2              |
+| 135–201 chars | 3             |
+| …           | …               |
+
+## Characters that secretly cost you money
+
+These look like normal characters but are **not** in GSM-7 and will
+silently bump your message to Unicode:
+
+- Smart quotes: `"` `"` `'` `'` (copy-paste from Word / Notion)
+- Em-dash `—` and en-dash `–`
+- Ellipsis character `…`
+- Non-breaking space
+- Any emoji
+
+Always paste user-generated content through a sanitizer if you want to
+guarantee GSM-7 pricing.
+
+## Practical advice
+
+- For transactional traffic (OTPs, alerts) keep messages ASCII-only and
+  under 160 chars to stay at 1 segment.
+- For marketing in Swahili / Sheng, GSM-7 covers almost all of it
+  (no accented Latin characters needed).
+- For Arabic, Amharic, or any message with emoji, budget for UCS-2.
+
+## Hard limit
+
+A single API call accepts up to **1530 characters** (10 GSM-7 segments
+or 7 UCS-2 segments). Anything longer should be split into multiple
+sends at the application level.

@@ -1,0 +1,26 @@
+---
+title: "Get Balance"
+openapi: "POST /api/services/getbalance/"
+---
+
+Returns the current SMS credit balance on your account. Use this to:
+
+- Trigger a low-balance alert from your monitoring system.
+- Block a campaign in your dashboard when there isn't enough credit
+  for the recipient list.
+- Reconcile spend per billing cycle.
+
+## How credits map to messages
+
+One credit corresponds to **one segment**:
+
+- One 160-character GSM-7 segment, or
+- One 70-character Unicode segment.
+
+A 200-character GSM-7 message costs **2 credits** (two segments). See
+[Encoding](/concepts/encoding) for the full segmentation rules.
+
+## Polling
+
+This endpoint is cheap to call. For a low-balance alarm, polling every
+5 minutes is fine. For dashboard display, call it on demand.

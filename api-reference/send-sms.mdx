@@ -1,0 +1,28 @@
+---
+title: "Send SMS"
+openapi: "POST /api/services/sendsms/"
+---
+
+Submits one SMS to one recipient. Returns immediately with a
+`messageid` you can use later to look up the delivery state via
+[Get delivery report](/api-reference/get-delivery-report).
+
+## Field notes
+
+- **`mobile`** — international format, no `+`. Kenyan numbers start
+  with `254`. Example: `254712345678`.
+- **`shortcode`** — your approved sender ID. Use `XYRA` for test traffic.
+  See [Sender IDs](/concepts/sender-ids) for registration.
+- **`message`** — up to 1530 characters. See [Encoding](/concepts/encoding)
+  for how length translates to billed segments.
+- **`pass_type`** — always `"plain"`. Reserved for future encrypted modes.
+- **`clientsmsid`** *(optional)* — an integer of your choosing,
+  echoed back in the response. Use it to correlate the response with
+  your own records when you don't want to depend on `messageid`.
+
+## What "success" means here
+
+A `200` response with `response-description: "Success"` means the
+message has been **accepted for delivery** — not that the handset has
+received it. Use [Get delivery report](/api-reference/get-delivery-report)
+to confirm final delivery.

@@ -1,0 +1,62 @@
+---
+title: "Introduction"
+description: "The Xyra Bulk SMS HTTP API — send SMS to Kenyan networks in seconds."
+---
+
+The Xyra Bulk SMS API lets you send single or bulk SMS messages to
+**Safaricom**, **Airtel**, and **Telkom** subscribers in Kenya from any
+backend that can make an HTTPS request.
+
+It's a plain JSON-over-HTTPS API with three primitives:
+
+<CardGroup cols={3}>
+  <Card title="Send" icon="paper-plane" href="/api-reference/send-sms">
+    Submit one or many messages.
+  </Card>
+  <Card title="Track" icon="signal-stream" href="/api-reference/get-delivery-report">
+    Query the carrier delivery state per message.
+  </Card>
+  <Card title="Account" icon="wallet" href="/api-reference/get-balance">
+    Check your balance and network health.
+  </Card>
+</CardGroup>
+
+## Why use it
+
+- **Sub-second submission.** Direct carrier connections, no email-to-SMS gateways.
+- **Per-message DLRs.** Every send returns a `messageid` you can use to confirm delivery.
+- **Branded sender IDs.** Approved alphanumeric sender IDs (e.g. `XYRA`) appear in place of a phone number.
+- **One API, all networks.** Routing across Safaricom, Airtel, and Telkom is handled for you.
+
+## Base URL
+
+```text
+https://bulksms.xyratechnology.co.ke
+```
+
+All endpoints sit under `/api/services/`. For example, send-SMS lives at:
+
+```text
+POST https://bulksms.xyratechnology.co.ke/api/services/sendsms/
+```
+
+<Note>
+  Trailing slashes are required. `…/sendsms` will 404 — use `…/sendsms/`.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Send your first SMS in under five minutes.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How `apikey` and `partnerID` work.
+  </Card>
+  <Card title="Sender IDs" icon="id-badge" href="/concepts/sender-ids">
+    Register a branded sender ID for your business.
+  </Card>
+  <Card title="Delivery Receipts" icon="circle-check" href="/concepts/delivery-receipts">
+    What each DLR state means.
+  </Card>
+</CardGroup>

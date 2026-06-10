@@ -1,0 +1,145 @@
+---
+title: "Quickstart"
+description: "Send your first SMS in three curl commands."
+---
+
+This guide walks you from zero to a delivered SMS in about five minutes.
+
+## 1. Get your credentials
+
+Sign in at [bulksms.xyratechnology.co.ke](https://bulksms.xyratechnology.co.ke)
+and copy the two values shown on the **API Keys** screen:
+
+- `partnerID` — identifies your account
+- `apikey` — secret. Keep it server-side.
+
+If you don't have a sender ID yet, you can use the default `XYRA` for
+test traffic. To register your own brand, see
+[Sender IDs](/concepts/sender-ids).
+
+## 2. Send your first message
+
+<CodeGroup>
+
+```bash curl
+curl -X POST https://bulksms.xyratechnology.co.ke/api/services/sendsms/ \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "apikey": "YOUR_API_KEY",
+    "partnerID": "YOUR_PARTNER_ID",
+    "mobile": "254712345678",
+    "message": "Hello from Xyra Bulk SMS",
+    "shortcode": "XYRA",
+    "pass_type": "plain"
+  }'
+```
+
+```javascript Node.js
+const res = await fetch(
+  "https://bulksms.xyratechnology.co.ke/api/services/sendsms/",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      apikey: process.env.XYRA_API_KEY,
+      partnerID: process.env.XYRA_PARTNER_ID,
+      mobile: "254712345678",
+      message: "Hello from Xyra Bulk SMS",
+      shortcode: "XYRA",
+      pass_type: "plain",
+    }),
+  },
+);
+
+const { responses } = await res.json();
+console.log(responses[0].messageid);
+```
+
+```python Python
+import os, requests
+
+r = requests.post(
+    "https://bulksms.xyratechnology.co.ke/api/services/sendsms/",
+    json={
+        "apikey":    os.environ["XYRA_API_KEY"],
+        "partnerID": os.environ["XYRA_PARTNER_ID"],
+        "mobile":    "254712345678",
+        "message":   "Hello from Xyra Bulk SMS",
+        "shortcode": "XYRA",
+        "pass_type": "plain",
+    },
+    timeout=10,
+)
+print(r.json()["responses"][0]["messageid"])
+```
+
+```php PHP
+$ch = curl_init('https://bulksms.xyratechnology.co.ke/api/services/sendsms/');
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_POSTFIELDS => json_encode([
+        'apikey'    => getenv('XYRA_API_KEY'),
+        'partnerID' => getenv('XYRA_PARTNER_ID'),
+        'mobile'    => '254712345678',
+        'message'   => 'Hello from Xyra Bulk SMS',
+        'shortcode' => 'XYRA',
+        'pass_type' => 'plain',
+    ]),
+]);
+$body = json_decode(curl_exec($ch), true);
+echo $body['responses'][0]['messageid'];
+```
+
+</CodeGroup>
+
+A successful response looks like:
+
+```json
+{
+  "responses": [
+    {
+      "response-code": 200,
+      "response-description": "Success",
+      "mobile": "254712345678",
+      "messageid": 78726470,
+      "networkid": "1"
+    }
+  ]
+}
+```
+
+Save the `messageid` — you'll use it to check delivery in the next step.
+
+## 3. Check delivery status
+
+```bash
+curl -X POST https://bulksms.xyratechnology.co.ke/api/services/getdlr/ \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "apikey": "YOUR_API_KEY",
+    "partnerID": "YOUR_PARTNER_ID",
+    "messageID": "78726470"
+  }'
+```
+
+You'll get back a delivery state — `DELIVRD` means the handset confirmed
+receipt. See [Delivery Receipts](/concepts/delivery-receipts) for the full list.
+
+## 4. Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Bulk send" icon="layer-group" href="/api-reference/send-bulk-sms">
+    Fan one request out to many recipients.
+  </Card>
+  <Card title="Encoding" icon="font" href="/concepts/encoding">
+    GSM-7 vs Unicode and how it affects pricing.
+  </Card>
+  <Card title="Error codes" icon="triangle-exclamation" href="/errors">
+    What every non-200 response means.
+  </Card>
+  <Card title="Network status" icon="signal" href="/api-reference/network-status">
+    Carrier health before you launch a campaign.
+  </Card>
+</CardGroup>

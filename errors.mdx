@@ -1,0 +1,58 @@
+---
+title: "Error codes"
+description: "Every response code returned by the Xyra Bulk SMS API."
+---
+
+The API uses two layers of status:
+
+1. **HTTP status** — `200` for any well-formed request the API
+   processed (even if the underlying operation failed).
+2. **`response-code` in the JSON body** — the actual outcome of the
+   operation.
+
+Always check `response-code`, not just the HTTP status.
+
+## Success
+
+| Code | Meaning                                       |
+| ---- | --------------------------------------------- |
+| 200  | Operation succeeded.                          |
+
+## Validation
+
+| Code  | Meaning                                                              | Fix                                              |
+| ----- | -------------------------------------------------------------------- | ------------------------------------------------ |
+| 1001  | Missing required field.                                              | Compare your body against the endpoint's schema. |
+| 1002  | Malformed JSON.                                                      | Validate JSON before sending.                    |
+| 1006  | `mobile` not in international format (`254xxxxxxxxx`).               | Strip `+`, leading `0`, and spaces.              |
+| 1007  | `shortcode` not registered for your account.                         | See [Sender IDs](/concepts/sender-ids).          |
+| 1008  | `message` too long. Max 1530 characters.                             | Split into multiple sends.                       |
+
+## Authentication & billing
+
+| Code  | Meaning                                                              | Fix                                              |
+| ----- | -------------------------------------------------------------------- | ------------------------------------------------ |
+| 1003  | Invalid `apikey` or `partnerID`.                                     | Re-copy from the dashboard. Rotate if compromised. |
+| 1004  | Insufficient credit.                                                 | Top up at the dashboard.                         |
+| 1005  | `messageID` not found (DLR lookup).                                  | Verify you're using the `messageid` from the send response, not your `clientsmsid`. |
+
+## Server / carrier
+
+| Code  | Meaning                                                              | Fix                                              |
+| ----- | -------------------------------------------------------------------- | ------------------------------------------------ |
+| 1500  | Upstream carrier rejected the message.                               | Check `/mnostatus`. Retry after a brief delay.   |
+| 1501  | Internal server error.                                               | Retry with exponential backoff. Page support if persistent. |
+| 1503  | Service temporarily unavailable.                                     | Retry with exponential backoff.                  |
+
+## Retry strategy
+
+Codes that are safe to retry:
+
+- `1004` — after top-up.
+- `1500`, `1501`, `1503` — with exponential backoff (e.g. 2s, 5s, 15s).
+
+Codes that should **never** be retried automatically:
+
+- `1001`, `1002`, `1006`, `1007`, `1008` — fix the request, not the timing.
+- `1003` — fix the credentials.
+- `1005` — the message id doesn't exist; retrying won't help.

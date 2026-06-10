@@ -1,0 +1,35 @@
+---
+title: "Get Delivery Report"
+openapi: "POST /api/services/getdlr/"
+---
+
+Returns the carrier-reported delivery state for a single message,
+identified by the `messageID` you received from
+[Send SMS](/api-reference/send-sms) or
+[Send Bulk SMS](/api-reference/send-bulk-sms).
+
+## Polling cadence
+
+DLRs arrive over a wide time window — from a second to up to 24 hours.
+Don't poll in a tight loop. A reasonable pattern:
+
+| When        | Why                                                |
+| ----------- | -------------------------------------------------- |
+| `+5s`        | Most messages have a state by now.                |
+| `+30s`       | Picks up slower carrier paths.                    |
+| `+5m`        | Covers brief handset unreachability.              |
+| `+1h`        | Final reconciliation. Treat anything still pending as failed. |
+
+## Interpreting the state
+
+The `deliveryStatus` field is one of `DELIVRD`, `ACCEPTD`, `EXPIRED`,
+`UNDELIV`, `REJECTD`, `UNKNOWN`, or `DELETED`. See
+[Delivery Receipts](/concepts/delivery-receipts) for what each one
+means and what to do about it.
+
+## Webhook alternative
+
+For high-volume integrations, polling per message is wasteful. Contact
+[support](mailto:hello@xyratechnology.co.ke) to enable **DLR webhooks**
+— we'll POST every delivery state to a URL you provide as soon as the
+carrier reports it.

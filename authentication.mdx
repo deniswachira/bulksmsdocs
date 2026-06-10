@@ -1,0 +1,72 @@
+---
+title: "Authentication"
+description: "How API keys work in the Xyra Bulk SMS API."
+---
+
+The API uses a **two-part credential** sent inside the request body:
+
+| Field       | Purpose                                  |
+| ----------- | ---------------------------------------- |
+| `partnerID` | Identifies your account.                 |
+| `apikey`    | Secret. Treat it like a password.        |
+
+There is no header-based bearer token. Every endpoint that touches your
+account expects both fields in the JSON body.
+
+## Getting your credentials
+
+1. Sign in at [bulksms.xyratechnology.co.ke](https://bulksms.xyratechnology.co.ke).
+2. Open **Settings → API Keys**.
+3. Copy the `Partner ID` and `API Key`.
+
+If you ever suspect your key has leaked, click **Rotate** on the same
+screen — the old key stops working immediately.
+
+## Keeping the key safe
+
+<Warning>
+  Your `apikey` grants full send + spend rights on your account. Treat it
+  like a database password.
+</Warning>
+
+- **Server-side only.** Never embed it in a mobile app, single-page app,
+  or any code that ships to a user's browser.
+- **Use environment variables**, not hard-coded strings.
+- **Per-environment keys.** Use one key for production and a separate
+  key for staging / CI. Rotating one doesn't disrupt the other.
+
+```bash
+export XYRA_API_KEY=...
+export XYRA_PARTNER_ID=...
+```
+
+## Example: every authenticated call
+
+Every send / lookup request carries the same two fields:
+
+```json
+{
+  "apikey": "YOUR_API_KEY",
+  "partnerID": "YOUR_PARTNER_ID",
+  "...": "...endpoint-specific fields..."
+}
+```
+
+## Optional: token-based session
+
+A separate [`/api/services/auth/`](/api-reference/send-sms) endpoint
+exchanges `username` + `secret` for a short-lived token. Most server
+integrations do **not** need it — direct `apikey` + `partnerID` is
+simpler and is what every code sample in these docs uses. The token
+flow exists for browser-side / dashboard-style apps that prefer
+short-lived credentials.
+
+## Authentication errors
+
+| Code | Meaning                                                       |
+| ---- | ------------------------------------------------------------- |
+| 1001 | Missing required field. Check the request body schema.        |
+| 1003 | Invalid `apikey` or `partnerID`. Re-copy from the dashboard.  |
+| 1004 | Insufficient credit. Top up at the dashboard.                 |
+
+See [Error codes](/errors) for the full list.
