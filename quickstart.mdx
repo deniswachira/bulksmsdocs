@@ -29,7 +29,7 @@ and copy the two values shown on the **API Keys** screen:
 - `partnerID` — identifies your account
 - `apikey` — secret. Keep it server-side.
 
-If you don't have a sender ID yet, you can use the default `XYRA` for
+If you don't have a sender ID yet, you can use the default `XYRA TECH` for
 test traffic. To register your own brand, see
 [Sender IDs](/concepts/sender-ids).
 
@@ -45,7 +45,7 @@ curl -X POST https://bulksms.xyratechnology.co.ke/api/services/sendsms/ \
     "partnerID": "YOUR_PARTNER_ID",
     "mobile": "254712345678",
     "message": "Hello from Xyra Bulk SMS",
-    "shortcode": "XYRA",
+    "shortcode": "XYRA TECH",
     "pass_type": "plain"
   }'
 ```
@@ -61,7 +61,7 @@ const res = await fetch(
       partnerID: process.env.XYRA_PARTNER_ID,
       mobile: "254712345678",
       message: "Hello from Xyra Bulk SMS",
-      shortcode: "XYRA",
+      shortcode: "XYRA TECH",
       pass_type: "plain",
     }),
   },
@@ -81,7 +81,7 @@ r = requests.post(
         "partnerID": os.environ["XYRA_PARTNER_ID"],
         "mobile":    "254712345678",
         "message":   "Hello from Xyra Bulk SMS",
-        "shortcode": "XYRA",
+        "shortcode": "XYRA TECH",
         "pass_type": "plain",
     },
     timeout=10,

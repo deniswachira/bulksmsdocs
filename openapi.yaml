@@ -86,7 +86,7 @@ paths:
                   partnerID: "your-partner-id"
                   mobile: "254712345678"
                   message: "Hello from Xyra Bulk SMS"
-                  shortcode: "XYRA"
+                  shortcode: "XYRA TECH"
                   pass_type: "plain"
       responses:
         "200":
@@ -140,14 +140,14 @@ paths:
                       clientsmsid: 1001
                       mobile: "254712345678"
                       message: "Hello Alice"
-                      shortcode: "XYRA"
+                      shortcode: "XYRA TECH"
                     - apikey: "your-api-key"
                       partnerID: "your-partner-id"
                       pass_type: "plain"
                       clientsmsid: 1002
                       mobile: "254722345678"
                       message: "Hello Bob"
-                      shortcode: "XYRA"
+                      shortcode: "XYRA TECH"
       responses:
         "200":
           description: Batch accepted
@@ -319,7 +319,7 @@ components:
         shortcode:
           type: string
           description: Approved sender ID (alphanumeric, 1–11 chars) or shortcode.
-          example: "XYRA"
+          example: "XYRA TECH"
         pass_type:
           type: string
           enum: [plain]
