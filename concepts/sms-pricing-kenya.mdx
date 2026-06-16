@@ -1,0 +1,221 @@
+---
+title: "Bulk SMS Pricing in Kenya — Per-Account Rates Explained"
+sidebarTitle: "SMS Pricing (Kenya)"
+description: "How bulk SMS pricing works in Kenya in 2026. Negotiated per-account rates on the Xyra Bulk SMS API — starting around KES 0.60 per SMS and dropping to KES 0.40–0.50 for higher-volume senders to Safaricom, Airtel, and Telkom."
+---
+
+If you've ever tried to compare bulk SMS prices in Kenya, you've
+probably noticed the same thing every buyer notices: providers quote a
+single number on the homepage ("from KES 0.60!") but the actual bill
+at the end of the month never quite matches. That's because the
+quoted price hides three things — the **per-account rate** your
+provider gave you, the **message encoding**, and the **destination
+network**.
+
+This page explains how Xyra Bulk SMS prices accounts, the formula you
+need to estimate a campaign before you press send, and how to lock in
+a sharper rate as you grow.
+
+## How Xyra Bulk SMS prices accounts
+
+Xyra Bulk SMS is operated as a **per-account** service: every customer
+is onboarded by our team and assigned a rate that fits their expected
+volume. There is **no self-signup and no public package ladder**.
+
+In practice that means:
+
+- New accounts typically start at around **KES 0.60 per SMS** for
+  alphanumeric sender ID traffic on Safaricom, Airtel, and Telkom
+  Kenya.
+- As your monthly volume grows — or once we see consistent traffic on
+  the account — your rate is **adjusted down to KES 0.40–0.50 per
+  SMS** depending on volume, destination mix, and message type
+  (transactional vs promotional).
+- Rate changes are applied to the account directly; you don't need to
+  switch "packages" or re-integrate.
+
+If you're sending under ~10,000 SMS per month, the starting rate is
+what you'll use for a while. If you're sending **50,000+ SMS per
+month**, ask us for a custom rate up front — we'll usually quote at
+the sharp end of the band on day one.
+
+## How bulk SMS pricing actually works
+
+Independent of which provider you choose, every Kenyan bulk SMS bill
+is driven by the same three factors.
+
+### 1. Per-segment, not per-message
+
+The SMS standard splits long messages into **segments** of either
+160 characters (GSM-7 encoding) or 70 characters (Unicode/UCS-2
+encoding). You are billed **per segment**, not per "message" as a
+human would understand it.
+
+A single emoji turns the whole message Unicode, which cuts the segment
+length from 160 → 70 characters and roughly **doubles your bill**.
+Most "surprise bills" in Kenya come from a single 😊 in a campaign of
+50,000 messages. See [Encoding & Length](/concepts/encoding) for the
+full character-counting rules.
+
+### 2. Per-account negotiated rate
+
+Your per-SMS rate is fixed on your account once it's provisioned. It
+doesn't change automatically with each top-up the way a self-serve
+platform's tiers do — it changes when we agree to change it (usually
+in a single conversation once your volume justifies it).
+
+This matters because:
+
+- Your finance team always knows the unit cost without checking which
+  package is currently active.
+- You don't need to commit upfront to a large credit purchase just to
+  unlock a better rate.
+- Volume that grows over the quarter still earns you the better rate
+  going forward, by adjustment on the account.
+
+### 3. Network and sender-type effects
+
+The per-SMS rate on your account is a **blended** price across
+Safaricom, Airtel, and Telkom. The carriers themselves charge
+different wholesale rates, but you pay the same blended price
+regardless of which carrier the recipient is on. This matters because:
+
+- **Campaigns skewed to Safaricom subscribers** (≈65% of the Kenyan
+  market) don't get worse pricing.
+- **Campaigns skewed to Airtel or Telkom** still benefit from the
+  blended rate.
+
+Behind the scenes the carriers also apply different fees for:
+
+- **Alphanumeric sender IDs** (e.g. `XYRA TECH`) vs numeric shortcodes
+- **Promotional vs transactional** message classification
+- **Time-of-day restrictions** (some carriers throttle promo traffic
+  outside 08:00–21:00)
+
+Xyra handles all of these for you under one account rate.
+
+## What a real campaign costs
+
+Let's run through three realistic scenarios at an example rate of
+**KES 0.55 per SMS** (mid-volume account).
+
+### Scenario 1 — School fees reminder
+
+A primary school in Kiambu wants to send a fee-balance reminder to
+**1,200 parents**.
+
+- Message: `"Dear Parent, this is a reminder that the term 2 fees balance for [Student] is KES [Amount]. Please clear by 30/06. Thank you."` — 142 characters, fits in **1 GSM-7 segment**.
+- Cost: **1,200 × KES 0.55 = KES 660**.
+
+### Scenario 2 — SACCO dividend announcement (Swahili)
+
+A SACCO with **8,500 members** sends a Swahili dividend notice
+containing the word "shíkílía" (with an accented character).
+
+- That one accented character forces **Unicode encoding**. The
+  message is 88 characters, which means **2 Unicode segments**.
+- Cost: **8,500 × 2 segments × KES 0.55 = KES 9,350**.
+
+If they had stripped the accent and stayed in GSM-7, the same campaign
+would have cost **KES 4,675** — half the price. Always check encoding
+before a large send.
+
+### Scenario 3 — E-commerce OTP volume
+
+A Kenyan fintech sends **~50,000 transactional OTPs per month**, each
+under 80 characters in plain ASCII (1 GSM-7 segment). At this volume
+they'd typically be quoted closer to **KES 0.45 per SMS**:
+
+- Monthly cost: **50,000 × KES 0.45 = KES 22,500**.
+
+For predictable high-volume traffic like OTPs, get the rate quoted up
+front — it's worth a 10-minute call before integration.
+
+## How Xyra Bulk SMS compares in Kenya
+
+| Provider              | Typical entry rate (per SMS) | Best volume rate                            |
+| --------------------- | ---------------------------: | ------------------------------------------: |
+| Xyra Bulk SMS         |                  ~KES 0.60   | **KES 0.40–0.50** (per account, by volume)  |
+| Africa's Talking      |                  ~KES 0.80   |                                  ~KES 0.55  |
+| Other local resellers |              KES 1.00–1.20   |                                  KES 0.70+  |
+
+The absolute cost difference between Kenyan SMS providers is small at
+low volume (KES 0.05–0.15 per SMS). The bigger cost is **engineering
+time** — integrating an API, handling delivery receipts, and dealing
+with the carrier when a sender ID gets blocked. That's where Xyra's
+docs, dedicated account managers, and per-message DLR pay for
+themselves.
+
+## Estimating your monthly bill
+
+The formula you'll use most often:
+
+```text
+monthly_cost (KES) = recipients × segments_per_message × your_account_rate
+```
+
+Quick rules of thumb:
+
+- **Plain English/Swahili, under 160 chars** → 1 segment.
+- **With emoji, accents, or Arabic/Hindi script** → start at 2 segments per 70 chars.
+- **Long-form messages over 160 chars (GSM-7) or 70 chars (Unicode)** → divide and round up.
+
+If you're sending more than **50,000 SMS/month** or running predictable
+OTP traffic, ask us for a custom enterprise rate at
+[hello@xyratechnology.co.ke](mailto:hello@xyratechnology.co.ke). We
+routinely quote in the **KES 0.40–0.50** band for committed volume.
+
+## What's NOT charged
+
+To make budgeting clean, the Xyra Bulk SMS API does **not** charge for:
+
+- API calls themselves (only successful submissions to the carrier)
+- Delivery-report polling via [/getdlr](/api-reference/get-delivery-report)
+- Balance checks via [/getbalance](/api-reference/get-balance)
+- Network-status checks via [/mnostatus](/api-reference/network-status)
+- Sender ID registration (handled by our team within 2–5 business days)
+- Account setup, onboarding, or dashboard access
+- Monthly platform / subscription fees
+
+You pay only for SMS segments actually accepted by the destination
+carrier. Messages that fail validation (invalid number format, blocked
+sender, etc.) are **not** billed.
+
+<Note>
+  Messages that the carrier accepts but later marks `UNDELIV` (handset
+  off for 48h, number disconnected, etc.) **are** billed, because the
+  carrier has already charged us for the submission attempt. This is
+  industry-standard across every Kenyan provider.
+</Note>
+
+## Payment methods
+
+Xyra Bulk SMS accepts:
+
+- **M-Pesa Paybill** — most popular for SME finance teams
+- **Bank transfer** — for invoiced enterprise accounts
+- **M-Pesa STK Push** — available for smaller top-ups on request
+
+VAT-compliant invoices and receipts are issued for every top-up
+automatically.
+
+## Ready to get a quote?
+
+The fastest way to lock in a rate for your specific use case is to
+tell us your monthly volume and we'll quote on the spot:
+
+<CardGroup cols={2}>
+  <Card title="WhatsApp the team" icon="whatsapp" href="https://wa.me/254111336506?text=Hi%20Xyra%2C%20I%27d%20like%20a%20quote%20for%20bulk%20SMS%20pricing.">
+    Get a same-day quote on +254 111 336 506.
+  </Card>
+  <Card title="Email sales" icon="envelope" href="mailto:hello@xyratechnology.co.ke?subject=Bulk%20SMS%20pricing%20quote">
+    hello@xyratechnology.co.ke — include monthly volume and target networks.
+  </Card>
+</CardGroup>
+
+## See also
+
+- [Message Encoding & Length](/concepts/encoding) — how a single emoji can double your bill
+- [Sender IDs](/concepts/sender-ids) — registering an alphanumeric sender like `XYRA TECH`
+- [Delivery Receipts](/concepts/delivery-receipts) — what `UNDELIV` vs `EXPIRED` mean for billing
+- [Quickstart](/quickstart) — send your first SMS in five minutes
